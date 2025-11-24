@@ -8,3 +8,4 @@ langchain-core
 langchain-community
 langgraph-supervisor
 streamlit
+markdown
