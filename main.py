@@ -2,21 +2,18 @@ import streamlit as st
 import time
 from pipeline import run_pipeline
 
-st.set_page_config(page_title="AI Blog Generator", layout="wide")
+st.set_page_config(page_title="AI Blog Generator", page_icon="./assets/icon.png", layout="wide")
 
 st.markdown("""
 <style>
-/* Remove top padding for the main container */
 .block-container {
     padding-top: 0rem;
 }
 
-/* Remove margin above title */
 h1 {
     margin-top: 2rem !important;
 }
 
-/* Remove Streamlit toolbar spacing */
 main > div:first-child {
     padding-top: 0rem !important;
 }
@@ -94,28 +91,22 @@ with col1:
     """
     st.markdown(log_style, unsafe_allow_html=True)
 
-    # Keep a log buffer
     if "log_buffer" not in st.session_state:
         st.session_state.log_buffer = []
 
-    # ---------- ALWAYS RENDER EMPTY BOX FIRST ----------
     if len(st.session_state.log_buffer) == 0:
         log_box.markdown("<div class='agent-log-box'></div>", unsafe_allow_html=True)
     else:
-        # If logs exist, show them
         log_html = "<div class='agent-log-box'>" + "<br>".join(st.session_state.log_buffer) + "</div>"
         log_box.markdown(log_html, unsafe_allow_html=True)
 
-    # ------------------ STREAM START BUTTON --------------------
     if st.button("Generate Blog", type="primary", use_container_width=True):
 
         st.session_state.log_buffer = []
         st.session_state.blog_stream = ""
 
-        # STREAM EVENTS LIVE
         for event in run_pipeline(topic, tone, length, audience):
 
-            # ------------------ Extract Logs ------------------
             if "supervisor" in event:
                 msg = event["supervisor"]["messages"][-1].content
                 st.session_state.log_buffer.append(f"[Supervisor] {msg}")
@@ -132,11 +123,9 @@ with col1:
                 msg = event["writer"]["messages"][-1].content
                 st.session_state.log_buffer.append(f"[Writer] {msg}")
 
-            # RENDER LOGS EVERY ITERATION
             log_html = "<div class='agent-log-box'>" + "<br>".join(st.session_state.log_buffer) + "</div>"
             log_box.markdown(log_html, unsafe_allow_html=True)
 
-            # ------------------ Extract blog stream ------------------
             if "writer" in event and "blog" in event["writer"]:
                 st.session_state.blog_stream = event["writer"]["blog"]
 
@@ -144,38 +133,14 @@ with col1:
 
         st.rerun()
 
-# with col2:
-#     st.markdown("### Blog Output")
-
-#     if "blog_stream" not in st.session_state:
-#         st.session_state.blog_stream = ""
-
-#     # Apply custom CSS to style the markdown container
-#     st.markdown("""
-#     <style>
-#     .element-container:has(> .stMarkdown > div > p) {
-#         border: 1px solid #444;
-#         border-radius: 6px;
-#         padding: 15px;
-#         max-height: 540px;
-#         overflow-y: auto;
-#         background-color: #ffffff15;
-#     }
-#     </style>
-#     """, unsafe_allow_html=True)
-    
-#     st.markdown(st.session_state.blog_stream)
-
 with col2:
     st.markdown("### Blog Output")
 
     if "blog_stream" not in st.session_state:
         st.session_state.blog_stream = ""
 
-    # Create a container for the blog output with markdown rendering
     blog_container = st.empty()
     
-    # Convert markdown to HTML for proper rendering inside the styled box
     import markdown
 
     st.markdown("""
@@ -207,12 +172,10 @@ with col2:
 
     
     if st.session_state.blog_stream:
-        # Convert markdown to HTML
         html_content = markdown.markdown(st.session_state.blog_stream)
         blog_html = f"<div class='blog-output-box'>{html_content}</div>"
         blog_container.html(blog_html)
     else:
-        # Empty state with border
         blog_container.html("<div class='blog-output-box'></div>")
 
 
